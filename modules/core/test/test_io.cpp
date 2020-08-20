@@ -1771,5 +1771,30 @@ TEST(Core_InputOutput, FileStorage_open_empty_16823)
 
     EXPECT_EQ(0, remove(fname.c_str()));
 }
+inline bool exists_test1 (const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }
+}
+TEST(Core_InputOutput, FileStorage_large_file)
+{
+    std::string fname = "test_fs_large.yml.gz";
+    if (!exists_test1(fname)) {
+        FileStorage fs;
+        fs.open(fname, FileStorage::WRITE);
+        fs << "vector" << "[";
+        for (int ii = 0; ii < 48*10*1000*1000; ++ii) {
+            fs << 0;
+        }
+        fs << "]";
+    }
+    FileStorage fs;
+    fs.open(fname, FileStorage::READ);
+    std::vector<uint8_t> data;
+    fs["vector"] >> data;
+}
 
 }} // namespace
